@@ -9,11 +9,13 @@
         color-scheme: dark;
         --bg: #0e1116;
         --panel: #161b22;
+        --panel-sub: #1c2230;
         --line: #2a3140;
         --text: #e6edf3;
         --muted: #8b949e;
         --accent: #4c8dff;
         --good: #3fb950;
+        --bad: #f85149;
         --radius: 12px;
       }
       * { box-sizing: border-box; }
@@ -21,7 +23,7 @@
         margin: 0;
         background: var(--bg);
         color: var(--text);
-        font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font: 15px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -32,25 +34,27 @@
         background: var(--panel);
         border: 1px solid var(--line);
         border-radius: var(--radius);
-        max-width: 540px;
+        max-width: 560px;
         width: 100%;
-        padding: 28px;
+        padding: 30px;
         text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        box-shadow: 0 12px 35px rgba(0,0,0,0.55);
       }
-      h1 { font-size: 22px; margin: 0 0 8px; }
+      h1 { font-size: 22px; margin: 0 0 8px; font-weight: 700; letter-spacing: -0.01em; }
       p { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
       .badge {
         display: inline-block;
-        padding: 4px 12px;
+        padding: 5px 14px;
         border-radius: 999px;
         font-size: 12px;
         font-weight: 600;
-        margin-bottom: 20px;
+        margin-bottom: 22px;
         background: #21262d;
         color: var(--muted);
+        border: 1px solid var(--line);
       }
-      .badge.online { background: rgba(63, 185, 80, 0.15); color: var(--good); border: 1px solid rgba(63, 185, 80, 0.3); }
+      .badge.online { background: rgba(63, 185, 80, 0.15); color: var(--good); border-color: rgba(63, 185, 80, 0.35); }
+      .badge.offline { background: rgba(248, 81, 73, 0.15); color: var(--bad); border-color: rgba(248, 81, 73, 0.35); }
       .btn {
         display: block;
         width: 100%;
@@ -60,7 +64,7 @@
         color: #fff;
         text-decoration: none;
         font-weight: 600;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         border: 0;
         cursor: pointer;
         font-size: 15px;
@@ -72,90 +76,150 @@
         border: 1px solid var(--line);
         color: var(--text);
       }
+      .row {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .row input {
+        flex: 1;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 12px;
+        color: var(--text);
+        font-size: 13px;
+        font-family: ui-monospace, Menlo, monospace;
+      }
+      .row button {
+        padding: 8px 14px;
+        background: var(--panel-sub);
+        border: 1px solid var(--line);
+        color: var(--text);
+        border-radius: 8px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .row button:hover {
+        background: var(--line);
+      }
       code {
         font-family: ui-monospace, Menlo, monospace;
         font-size: 13px;
-        background: #1c2230;
+        background: var(--panel-sub);
         padding: 3px 8px;
         border-radius: 5px;
         word-break: break-all;
       }
       .info-box {
-        margin-top: 20px;
-        padding: 14px;
+        margin-top: 22px;
+        padding: 16px;
         border-radius: 8px;
         background: #11151c;
         border: 1px solid var(--line);
         text-align: left;
         font-size: 13px;
       }
+      .info-box div + div { margin-top: 8px; }
+      label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
     </style>
   </head>
   <body>
     <div class="card">
       <h1>Miracle Debrid Configuration</h1>
-      <p>Connecting to your local computer...</p>
+      <p>Routes directly to your local computer running Miracle Debrid.</p>
 
-      <div class="badge" id="statusBadge">Checking computer connection...</div>
+      <div class="badge" id="statusBadge">Checking connection to your computer...</div>
 
       <div id="actions">
         <a id="stremioBtn" class="btn" href="#">Open in Stremio</a>
-        <a id="webBtn" class="btn secondary" href="#">Open Dashboard on Computer</a>
+        <button id="copyBtn" class="btn secondary">Copy Stremio Install Link</button>
+        <a id="webBtn" class="btn secondary" href="#">Open Web Dashboard on Computer</a>
       </div>
 
       <div class="info-box">
         <div><b>Computer Name:</b> <code id="hostName">desktop-2povfrl.local</code></div>
-        <div style="margin-top: 6px;"><b>Local Address:</b> <code id="localUrl">http://desktop-2povfrl.local:11470</code></div>
+        <div><b>Local Address:</b> <code id="localUrl">http://desktop-2povfrl.local:11470</code></div>
+        <div style="margin-top: 14px;">
+          <label>Host or IP Address:</label>
+          <div class="row">
+            <input id="customHost" type="text" value="desktop-2povfrl.local:11470" />
+            <button id="testBtn">Test Connection</button>
+          </div>
+        </div>
       </div>
     </div>
 
     <script>
-      const COMPUTER_HOST = 'desktop-2povfrl.local:11470';
+      const DEFAULT_HOST = 'desktop-2povfrl.local:11470';
       const FALLBACK_IP = '192.168.100.2:11470';
       const TOKEN = '198d93aa73665d012157b38a718ab7b4';
 
-      const stremioUrl = `stremio://${COMPUTER_HOST}/${TOKEN}/manifest.json`;
-      const dashboardUrl = `http://${COMPUTER_HOST}/`;
+      let currentHost = localStorage.getItem('md_host') || DEFAULT_HOST;
+      document.getElementById('customHost').value = currentHost;
 
-      document.getElementById('stremioBtn').href = stremioUrl;
-      document.getElementById('webBtn').href = dashboardUrl;
+      function updateUrls(host) {
+        currentHost = host;
+        localStorage.setItem('md_host', host);
+        const stremioUrl = `stremio://${host}/${TOKEN}/manifest.json`;
+        const dashboardUrl = `http://${host}/`;
+        document.getElementById('stremioBtn').href = stremioUrl;
+        document.getElementById('webBtn').href = dashboardUrl;
+        document.getElementById('localUrl').textContent = `http://${host}`;
+        document.getElementById('hostName').textContent = host.split(':')[0];
+      }
+
+      async function testHost(host) {
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 1600);
+          const res = await fetch(`http://${host}/health`, { signal: controller.signal, mode: 'cors' });
+          clearTimeout(timer);
+          return res.ok;
+        } catch {
+          return false;
+        }
+      }
 
       async function checkServer() {
         const badge = document.getElementById('statusBadge');
-        const hosts = [COMPUTER_HOST, FALLBACK_IP, '127.0.0.1:11470'];
+        badge.className = 'badge';
+        badge.textContent = 'Checking connection...';
+
+        const custom = document.getElementById('customHost').value.trim();
+        const hosts = [custom, DEFAULT_HOST, FALLBACK_IP, '127.0.0.1:11470'].filter(Boolean);
+        const checked = new Set();
 
         for (const host of hosts) {
-          try {
-            const controller = new AbortController();
-            const timer = setTimeout(() => controller.abort(), 1500);
-            const res = await fetch(`http://${host}/health`, { signal: controller.signal, mode: 'cors' });
-            clearTimeout(timer);
-            if (res.ok) {
-              const data = await res.json();
-              badge.textContent = `Computer Connected (${host})`;
-              badge.className = 'badge online';
-
-              const activeStremioUrl = `stremio://${host}/${TOKEN}/manifest.json`;
-              document.getElementById('stremioBtn').href = activeStremioUrl;
-              document.getElementById('webBtn').href = `http://${host}/`;
-              document.getElementById('localUrl').textContent = `http://${host}`;
-
-              // Auto-redirect to local dashboard if opened directly in browser
-              setTimeout(() => {
-                if (window.location.search.includes('redirect=true')) {
-                  window.location.href = `http://${host}/`;
-                }
-              }, 1200);
-              return;
-            }
-          } catch (e) {
-            // continue checking fallbacks
+          if (checked.has(host)) continue;
+          checked.add(host);
+          if (await testHost(host)) {
+            badge.textContent = `Computer Connected (${host})`;
+            badge.className = 'badge online';
+            updateUrls(host);
+            return;
           }
         }
 
-        badge.textContent = 'Server Offline — Run start.bat on your PC';
+        badge.textContent = 'Server Offline — Double-click start.bat on your PC';
+        badge.className = 'badge offline';
+        updateUrls(custom || DEFAULT_HOST);
       }
 
+      document.getElementById('testBtn').onclick = () => {
+        checkServer();
+      };
+
+      document.getElementById('copyBtn').onclick = () => {
+        const url = `http://${currentHost}/${TOKEN}/manifest.json`;
+        navigator.clipboard.writeText(url).then(() => {
+          const btn = document.getElementById('copyBtn');
+          btn.textContent = 'Copied to Clipboard!';
+          setTimeout(() => (btn.textContent = 'Copy Stremio Install Link'), 1500);
+        });
+      };
+
+      updateUrls(currentHost);
       checkServer();
     </script>
   </body>

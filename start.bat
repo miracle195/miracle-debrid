@@ -16,3 +16,4 @@ if not exist "dist\index.js" (
 echo Starting server...
 node dist/index.js
 pause
+

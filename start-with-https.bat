@@ -41,3 +41,4 @@ echo.
 
 bin\cloudflared.exe tunnel --url http://localhost:11470
 pause
+
