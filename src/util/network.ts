@@ -22,3 +22,4 @@ export function getLocalHostname(): string {
   const raw = os.hostname().toLowerCase();
   return raw.endsWith('.local') ? raw : `${raw}.local`;
 }
+

@@ -2,6 +2,7 @@ node_modules/
 dist/
 data/
 .testdata/
+bin/
 .env
 *.log
 .DS_Store
