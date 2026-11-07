@@ -56,7 +56,7 @@ export function createApp(): Express {
 
   app.use(express.static(publicDir, { index: false, maxAge: '1h' }));
 
-  app.get('/', (_req: Request, res: Response) => {
+  app.get(['/', '/configure', '/:token/configure'], (_req: Request, res: Response) => {
     res.sendFile(path.join(publicDir, 'index.html'));
   });
 

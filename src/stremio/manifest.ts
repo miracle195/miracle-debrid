@@ -30,7 +30,8 @@ export function buildManifest(): StremioManifest {
     catalogs: [],
     idPrefixes: ['tt'],
     behaviorHints: {
-      configurable: true,
+      // The addon URL carries a secret token, so it is not shareable as-is.
+      configurable: false,
       configurationRequired: false,
       p2p: false,
     },
