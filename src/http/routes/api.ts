@@ -10,6 +10,7 @@ import { humanBytes } from '../../util/bytes.js';
 import { infoHashFromMagnet, normalizeMagnet } from '../../util/ids.js';
 import { asyncRoute } from '../middleware/errors.js';
 import { requireToken, tokenPrefix } from '../middleware/auth.js';
+import { requestBaseUrl } from './stremio.js';
 
 export const apiRouter: Router = Router({ mergeParams: true });
 
@@ -21,13 +22,17 @@ apiRouter.use('/api', requireToken);
 /** Everything the dashboard needs in one call. */
 apiRouter.get(
   '/api/status',
-  asyncRoute(async (_req: Request, res: Response) => {
+  asyncRoute(async (req: Request, res: Response) => {
     const cacheBytes = await totalCacheBytes();
     const global = engine.globalStats();
+    const base = requestBaseUrl(req);
     res.json({
       addon: config.addon,
       publicUrl: config.publicUrl,
-      manifestUrl: `${config.publicUrl}${tokenPrefix()}/manifest.json`,
+      manifestUrl: `${base}/manifest.json`,
+      localIp: config.localIp,
+      localHostname: config.localHostname,
+      localManifestUrl: `http://${config.localHostname}:${config.port}${tokenPrefix()}/manifest.json`,
       providers: enabledProviders(),
       torrents: engine.listSessions(),
       global,
@@ -69,7 +74,7 @@ apiRouter.post(
     const session = await engine.acquire(magnet);
     const picked = pickFile(toPickable(session.torrent.files), want);
 
-    const base = `${config.publicUrl}${tokenPrefix()}`;
+    const base = requestBaseUrl(req);
     res.status(201).json({
       infoHash: session.infoHash,
       name: session.torrent.name,
@@ -149,7 +154,7 @@ apiRouter.get(
 
     const session = await engine.acquire(normalized);
     const picked = pickFile(toPickable(session.torrent.files), null);
-    const base = `${config.publicUrl}${tokenPrefix()}`;
+    const base = requestBaseUrl(req);
 
     res.json({
       infoHash,

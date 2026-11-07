@@ -15,6 +15,15 @@ import { requireToken, tokenPrefix } from '../middleware/auth.js';
 
 const log = createLogger('stremio');
 
+export function requestBaseUrl(req: Request): string {
+  const host = req.get('host');
+  if (host) {
+    const proto = req.protocol || 'http';
+    return `${proto}://${host}${tokenPrefix()}`;
+  }
+  return `${config.publicUrl}${tokenPrefix()}`;
+}
+
 export const stremioRouter: Router = Router({ mergeParams: true });
 
 stremioRouter.get('/manifest.json', requireToken, (_req: Request, res: Response) => {
@@ -53,7 +62,7 @@ stremioRouter.get(
       } -> ${results.length} candidate(s)`
     );
 
-    const base = `${config.publicUrl}${tokenPrefix()}`;
+    const base = requestBaseUrl(req);
     const bingeGroup = `miracle-${parsed.imdbId}`;
 
     const streams: StremioStream[] = [];
@@ -149,7 +158,7 @@ stremioRouter.get(
     session.selectOnly(picked.index);
 
     const target =
-      `${config.publicUrl}${tokenPrefix()}/play/${infoHash}/${picked.index}/` +
+      `${requestBaseUrl(req)}/play/${infoHash}/${picked.index}/` +
       encodeURIComponent(picked.name);
 
     log.info(`resolved ${infoHash.slice(0, 8)} -> #${picked.index} "${picked.name}"`);

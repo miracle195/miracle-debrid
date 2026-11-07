@@ -11,6 +11,7 @@ import { playRouter } from './routes/play.js';
 import { stremioRouter } from './routes/stremio.js';
 import { errorHandler, notFound } from './middleware/errors.js';
 import { tokenPrefix } from './middleware/auth.js';
+import { startDiscoveryService } from '../discovery.js';
 
 const log = createLogger('server');
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -37,12 +38,20 @@ export function createApp(): Express {
 
   app.use(express.json({ limit: '256kb' }));
 
-  app.get('/health', (_req: Request, res: Response) => {
+  app.get('/health', (req: Request, res: Response) => {
+    const host = req.get('host') || `${config.localIp}:${config.port}`;
+    const proto = req.protocol || 'http';
     res.json({
       ok: true,
+      service: 'miracle-debrid',
       uptime: Math.round(process.uptime()),
       torrents: engine.globalStats().torrents,
       version: config.addon.version,
+      ip: config.localIp,
+      hostname: config.localHostname,
+      port: config.port,
+      manifestUrl: `${proto}://${host}${tokenPrefix()}/manifest.json`,
+      localManifestUrl: `http://${config.localHostname}:${config.port}${tokenPrefix()}/manifest.json`,
     });
   });
 
@@ -72,10 +81,14 @@ export function startServer(): Promise<import('node:http').Server> {
   return new Promise((resolve, reject) => {
     const server = app.listen(config.port, config.host, () => {
       const manifest = `${config.publicUrl}${tokenPrefix()}/manifest.json`;
+      const localManifest = `http://${config.localHostname}:${config.port}${tokenPrefix()}/manifest.json`;
       log.info(`listening on http://${config.host}:${config.port}`);
-      log.info(`dashboard   ${config.publicUrl}/`);
+      log.info(`local IP    http://${config.localIp}:${config.port}`);
+      log.info(`mDNS host   http://${config.localHostname}:${config.port}`);
       log.info(`manifest    ${manifest}`);
-      log.info(`install in Stremio with: stremio://${manifest.replace(/^https?:\/\//, '')}`);
+      log.info(`LAN URL     ${localManifest} (persistent across IP/DHCP changes)`);
+      log.info(`install in Stremio with: stremio://${localManifest.replace(/^https?:\/\//, '')}`);
+      startDiscoveryService();
       resolve(server);
     });
 

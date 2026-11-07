@@ -124,6 +124,14 @@
           <button class="ghost" id="copyManifest">Copy</button>
           <a id="installLink" href="#"><button class="ghost">Open in Stremio</button></a>
         </div>
+        <div style="margin-top: 12px;">
+          <label style="font-size: 12px; margin-bottom: 4px;">Persistent Local Network (mDNS) URL — immune to DHCP / IP changes:</label>
+          <div class="copy">
+            <code id="localManifestUrl">—</code>
+            <button class="ghost" id="copyLocalManifest">Copy</button>
+            <a id="installLocalLink" href="#"><button class="ghost">Open in Stremio</button></a>
+          </div>
+        </div>
         <div class="grid" style="margin-top: 16px">
           <div class="stat"><b id="sDown">—</b><span>download</span></div>
           <div class="stat"><b id="sUp">—</b><span>upload</span></div>
@@ -222,6 +230,10 @@
           : 'no source providers configured';
         $('manifestUrl').textContent = s.manifestUrl;
         $('installLink').href = 'stremio://' + s.manifestUrl.replace(/^https?:\/\//, '');
+        if ($('localManifestUrl') && s.localManifestUrl) {
+          $('localManifestUrl').textContent = s.localManifestUrl;
+          $('installLocalLink').href = 'stremio://' + s.localManifestUrl.replace(/^https?:\/\//, '');
+        }
         $('sDown').textContent = fmtBytes(s.global.downloadSpeed) + '/s';
         $('sUp').textContent = fmtBytes(s.global.uploadSpeed) + '/s';
         $('sTorrents').textContent = s.global.torrents;
@@ -314,6 +326,14 @@
         $('copyManifest').textContent = 'Copied';
         setTimeout(() => ($('copyManifest').textContent = 'Copy'), 1500);
       };
+
+      if ($('copyLocalManifest')) {
+        $('copyLocalManifest').onclick = () => {
+          navigator.clipboard.writeText($('localManifestUrl').textContent);
+          $('copyLocalManifest').textContent = 'Copied';
+          setTimeout(() => ($('copyLocalManifest').textContent = 'Copy'), 1500);
+        };
+      }
 
       $('sweep').onclick = async () => {
         $('sweep').disabled = true;

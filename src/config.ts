@@ -104,6 +104,16 @@ const DEFAULT_TRACKERS = [
   'wss://tracker.openwebtorrent.com',
 ];
 
+import { getLocalIp, getLocalHostname } from './util/network.js';
+
+function resolvePublicUrl(port: number): string {
+  const custom = env('PUBLIC_URL');
+  if (custom && custom.trim() !== '' && custom !== 'auto') {
+    return custom.replace(/\/+$/, '');
+  }
+  return `http://${getLocalIp()}:${port}`;
+}
+
 export const config = {
   /** Bind host. 127.0.0.1 when sitting behind nginx on the same box. */
   host: env('HOST') ?? '0.0.0.0',
@@ -111,10 +121,11 @@ export const config = {
 
   /**
    * Externally reachable base URL, no trailing slash.
-   * This is what gets baked into the stream URLs Stremio receives, so it must
-   * be reachable from whatever device is playing (not just from the server).
+   * Auto-detects local network IP if left empty or set to 'auto'.
    */
-  publicUrl: (env('PUBLIC_URL') ?? `http://127.0.0.1:${num('PORT', 11470)}`).replace(/\/+$/, ''),
+  publicUrl: resolvePublicUrl(num('PORT', 11470)),
+  localIp: getLocalIp(),
+  localHostname: getLocalHostname(),
 
   accessToken: resolveToken(),
   /** Set false only if the service is bound to loopback or a private LAN. */
