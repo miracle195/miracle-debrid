@@ -39,6 +39,6 @@ echo   https://xxxxxxxx.trycloudflare.com/198d93aa73665d012157b38a718ab7b4/manif
 echo ===================================================
 echo.
 
-bin\cloudflared.exe tunnel --url http://localhost:11470
+bin\cloudflared.exe tunnel --url http://localhost:11480
 pause
 

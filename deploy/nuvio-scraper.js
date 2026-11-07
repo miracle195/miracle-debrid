@@ -6,7 +6,7 @@
  */
 
 let cachedServerUrl = null;
-const DEFAULT_PORT = 11470;
+const DEFAULT_PORT = 11480;
 const KNOWN_HOSTNAMES = ['miracle-debrid.local', 'desktop-2povfrl.local', 'localhost', '127.0.0.1'];
 
 async function testServer(url) {

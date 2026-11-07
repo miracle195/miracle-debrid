@@ -117,13 +117,13 @@ function resolvePublicUrl(port: number): string {
 export const config = {
   /** Bind host. 127.0.0.1 when sitting behind nginx on the same box. */
   host: env('HOST') ?? '0.0.0.0',
-  port: num('PORT', 11470),
+  port: num('PORT', 11480),
 
   /**
    * Externally reachable base URL, no trailing slash.
    * Auto-detects local network IP if left empty or set to 'auto'.
    */
-  publicUrl: resolvePublicUrl(num('PORT', 11470)),
+  publicUrl: resolvePublicUrl(num('PORT', 11480)),
   localIp: getLocalIp(),
   localHostname: getLocalHostname(),
 
