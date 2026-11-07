@@ -31,7 +31,7 @@ export function buildManifest(): StremioManifest {
     idPrefixes: ['tt'],
     behaviorHints: {
       configurable: true,
-      configurationRequired: false,
+      configurationRequired: true,
       p2p: false,
     },
   };

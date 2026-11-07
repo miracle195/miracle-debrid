@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Configure Miracle Debrid</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0e1116;
+        --panel: #161b22;
+        --line: #2a3140;
+        --text: #e6edf3;
+        --muted: #8b949e;
+        --accent: #4c8dff;
+        --good: #3fb950;
+        --radius: 12px;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        max-width: 540px;
+        width: 100%;
+        padding: 28px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      }
+      h1 { font-size: 22px; margin: 0 0 8px; }
+      p { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
+      .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        background: #21262d;
+        color: var(--muted);
+      }
+      .badge.online { background: rgba(63, 185, 80, 0.15); color: var(--good); border: 1px solid rgba(63, 185, 80, 0.3); }
+      .btn {
+        display: block;
+        width: 100%;
+        padding: 12px 18px;
+        border-radius: 8px;
+        background: var(--accent);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+        margin-bottom: 12px;
+        border: 0;
+        cursor: pointer;
+        font-size: 15px;
+        transition: filter 0.2s;
+      }
+      .btn:hover { filter: brightness(1.1); }
+      .btn.secondary {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--text);
+      }
+      code {
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 13px;
+        background: #1c2230;
+        padding: 3px 8px;
+        border-radius: 5px;
+        word-break: break-all;
+      }
+      .info-box {
+        margin-top: 20px;
+        padding: 14px;
+        border-radius: 8px;
+        background: #11151c;
+        border: 1px solid var(--line);
+        text-align: left;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Miracle Debrid Configuration</h1>
+      <p>Connecting to your local computer...</p>
+
+      <div class="badge" id="statusBadge">Checking computer connection...</div>
+
+      <div id="actions">
+        <a id="stremioBtn" class="btn" href="#">Open in Stremio</a>
+        <a id="webBtn" class="btn secondary" href="#">Open Dashboard on Computer</a>
+      </div>
+
+      <div class="info-box">
+        <div><b>Computer Name:</b> <code id="hostName">desktop-2povfrl.local</code></div>
+        <div style="margin-top: 6px;"><b>Local Address:</b> <code id="localUrl">http://desktop-2povfrl.local:11470</code></div>
+      </div>
+    </div>
+
+    <script>
+      const COMPUTER_HOST = 'desktop-2povfrl.local:11470';
+      const FALLBACK_IP = '192.168.100.2:11470';
+      const TOKEN = '198d93aa73665d012157b38a718ab7b4';
+
+      const stremioUrl = `stremio://${COMPUTER_HOST}/${TOKEN}/manifest.json`;
+      const dashboardUrl = `http://${COMPUTER_HOST}/`;
+
+      document.getElementById('stremioBtn').href = stremioUrl;
+      document.getElementById('webBtn').href = dashboardUrl;
+
+      async function checkServer() {
+        const badge = document.getElementById('statusBadge');
+        const hosts = [COMPUTER_HOST, FALLBACK_IP, '127.0.0.1:11470'];
+
+        for (const host of hosts) {
+          try {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 1500);
+            const res = await fetch(`http://${host}/health`, { signal: controller.signal, mode: 'cors' });
+            clearTimeout(timer);
+            if (res.ok) {
+              const data = await res.json();
+              badge.textContent = `Computer Connected (${host})`;
+              badge.className = 'badge online';
+
+              const activeStremioUrl = `stremio://${host}/${TOKEN}/manifest.json`;
+              document.getElementById('stremioBtn').href = activeStremioUrl;
+              document.getElementById('webBtn').href = `http://${host}/`;
+              document.getElementById('localUrl').textContent = `http://${host}`;
+
+              // Auto-redirect to local dashboard if opened directly in browser
+              setTimeout(() => {
+                if (window.location.search.includes('redirect=true')) {
+                  window.location.href = `http://${host}/`;
+                }
+              }, 1200);
+              return;
+            }
+          } catch (e) {
+            // continue checking fallbacks
+          }
+        }
+
+        badge.textContent = 'Server Offline — Run start.bat on your PC';
+      }
+
+      checkServer();
+    </script>
+  </body>
+</html>
