@@ -1,0 +1,51 @@
+services:
+  miracle-debrid:
+    build: .
+    image: miracle-debrid:latest
+    container_name: miracle-debrid
+    restart: unless-stopped
+
+    # Host networking makes BitTorrent NAT traversal far less painful and lets
+    # the peer port work without extra mapping. Comment it out and use the
+    # `ports` block below if you would rather keep the container isolated.
+    network_mode: host
+
+    # ports:
+    #   - "11470:11470"
+    #   - "51413:51413/tcp"
+    #   - "51413:51413/udp"
+
+    environment:
+      HOST: 0.0.0.0
+      PORT: 11470
+      # Change this to the address your Stremio device will actually hit.
+      PUBLIC_URL: http://192.168.1.50:11470
+      # Leave unset to auto-generate into /data/access-token on first boot.
+      # ACCESS_TOKEN: replace-me-with-a-long-random-string
+      REQUIRE_TOKEN: "true"
+
+      DATA_DIR: /data
+      DOWNLOAD_DIR: /data/downloads
+      CACHE_MAX_BYTES: 100GB
+
+      TORRENT_PORT: "51413"
+      TORRENT_MAX_CONNS: "60"
+      UPLOAD_LIMIT: "131072"
+
+      # Point at your own Jackett/Prowlarr if you run one.
+      # TORZNAB_URL: http://127.0.0.1:9117/api/v2.0/indexers/all/results/torznab
+      # TORZNAB_API_KEY: your-key
+
+      LOG_LEVEL: info
+
+    volumes:
+      - ./data:/data
+
+    # Streaming a 4K remux touches a lot of page cache; give it room.
+    shm_size: 256m
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

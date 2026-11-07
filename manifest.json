@@ -1,0 +1,31 @@
+{
+  "id": "community.miracle.debrid",
+  "version": "1.0.0",
+  "name": "Miracle Debrid",
+  "description": "Self-hosted debrid: downloads on the server and serves a plain HTTP stream.",
+  "resources": [
+    {
+      "name": "stream",
+      "types": [
+        "movie",
+        "series"
+      ],
+      "idPrefixes": [
+        "tt"
+      ]
+    }
+  ],
+  "types": [
+    "movie",
+    "series"
+  ],
+  "catalogs": [],
+  "idPrefixes": [
+    "tt"
+  ],
+  "behaviorHints": {
+    "configurable": true,
+    "configurationRequired": false,
+    "p2p": false
+  }
+}

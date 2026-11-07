@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Miracle Debrid</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0e1116;
+        --panel: #161b22;
+        --panel-2: #1c2230;
+        --line: #2a3140;
+        --text: #e6edf3;
+        --muted: #8b949e;
+        --accent: #4c8dff;
+        --good: #3fb950;
+        --warn: #d29922;
+        --bad: #f85149;
+        --radius: 10px;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+      header {
+        padding: 22px 24px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      h1 { font-size: 19px; margin: 0; letter-spacing: -0.01em; }
+      .tag {
+        font-size: 12px;
+        color: var(--muted);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 2px 10px;
+      }
+      main { max-width: 1080px; margin: 0 auto; padding: 24px; }
+      section {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 18px;
+        margin-bottom: 18px;
+      }
+      h2 { font-size: 14px; margin: 0 0 14px; text-transform: uppercase;
+           letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+      label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+      input, textarea {
+        width: 100%; background: var(--bg); color: var(--text);
+        border: 1px solid var(--line); border-radius: 8px;
+        padding: 10px 12px; font: inherit; font-size: 14px;
+      }
+      textarea { resize: vertical; min-height: 76px; font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+      input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+      .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+      .row > div { flex: 1 1 160px; }
+      button {
+        background: var(--accent); color: #fff; border: 0; border-radius: 8px;
+        padding: 10px 16px; font: inherit; font-weight: 600; cursor: pointer;
+      }
+      button:hover { filter: brightness(1.1); }
+      button:disabled { opacity: 0.5; cursor: not-allowed; }
+      button.ghost { background: transparent; border: 1px solid var(--line); color: var(--text); font-weight: 500; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+      .stat { background: var(--panel-2); border-radius: 8px; padding: 12px 14px; }
+      .stat b { display: block; font-size: 19px; font-variant-numeric: tabular-nums; }
+      .stat span { font-size: 12px; color: var(--muted); }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th { text-align: left; color: var(--muted); font-weight: 600; padding: 8px 10px;
+           border-bottom: 1px solid var(--line); font-size: 12px; }
+      td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+      tr:last-child td { border-bottom: 0; }
+      .name { max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .bar { height: 6px; background: var(--panel-2); border-radius: 999px; overflow: hidden; min-width: 70px; }
+      .bar i { display: block; height: 100%; background: var(--good); }
+      code {
+        font-family: ui-monospace, Menlo, monospace; font-size: 12.5px;
+        background: var(--panel-2); padding: 2px 6px; border-radius: 5px;
+        word-break: break-all;
+      }
+      .out { margin-top: 14px; font-size: 13px; }
+      .out.err { color: var(--bad); }
+      .out.ok { color: var(--good); }
+      .muted { color: var(--muted); font-size: 13px; }
+      .copy { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+      .note {
+        border-left: 3px solid var(--warn); padding: 10px 14px; background: var(--panel-2);
+        border-radius: 0 8px 8px 0; font-size: 13px; color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Miracle Debrid</h1>
+      <span class="tag" id="version">—</span>
+      <span class="tag" id="providers">—</span>
+    </header>
+
+    <main>
+      <section>
+        <h2>Access</h2>
+        <label for="token">Access token (from the server log or <code>data/access-token</code>)</label>
+        <div class="row">
+          <div style="flex: 3 1 320px"><input id="token" type="password" placeholder="paste token" autocomplete="off" /></div>
+          <div style="flex: 0 0 auto"><button id="connect">Connect</button></div>
+        </div>
+        <div class="out" id="authOut"></div>
+      </section>
+
+      <section id="statusSection" hidden>
+        <h2>Stremio addon</h2>
+        <p class="muted">Add this URL in Stremio → Addons → paste at the top.</p>
+        <div class="copy">
+          <code id="manifestUrl">—</code>
+          <button class="ghost" id="copyManifest">Copy</button>
+          <a id="installLink" href="#"><button class="ghost">Open in Stremio</button></a>
+        </div>
+        <div class="grid" style="margin-top: 16px">
+          <div class="stat"><b id="sDown">—</b><span>download</span></div>
+          <div class="stat"><b id="sUp">—</b><span>upload</span></div>
+          <div class="stat"><b id="sTorrents">—</b><span>active torrents</span></div>
+          <div class="stat"><b id="sCache">—</b><span>cache used</span></div>
+        </div>
+      </section>
+
+      <section id="addSection" hidden>
+        <h2>Play a magnet</h2>
+        <label for="magnet">Magnet URI or infohash</label>
+        <textarea id="magnet" placeholder="magnet:?xt=urn:btih:…"></textarea>
+        <div class="row" style="margin-top: 12px">
+          <div><label for="season">Season (optional)</label><input id="season" type="number" min="0" /></div>
+          <div><label for="episode">Episode (optional)</label><input id="episode" type="number" min="0" /></div>
+          <div style="flex: 0 0 auto"><button id="add">Resolve &amp; get stream URL</button></div>
+        </div>
+        <div class="out" id="addOut"></div>
+      </section>
+
+      <section id="torrentsSection" hidden>
+        <h2>Active</h2>
+        <div id="torrents"><p class="muted">Nothing loaded.</p></div>
+      </section>
+
+      <section id="cacheSection" hidden>
+        <h2>Cache</h2>
+        <div class="row" style="margin-bottom: 14px">
+          <div style="flex: 0 0 auto"><button class="ghost" id="sweep">Sweep now</button></div>
+        </div>
+        <div id="cache"><p class="muted">—</p></div>
+      </section>
+
+      <p class="note">
+        This server streams whatever you point it at. Make sure you have the right to
+        download and play the content you add.
+      </p>
+    </main>
+
+    <script>
+      // Token lives in memory (and optionally the URL hash) — never persisted here.
+      let token = location.hash.slice(1) || '';
+      let poll = null;
+
+      const $ = (id) => document.getElementById(id);
+      const fmtBytes = (n) => {
+        if (!isFinite(n) || n < 0) return '—';
+        const u = ['B', 'KB', 'MB', 'GB', 'TB'];
+        let v = n, i = 0;
+        while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; }
+        return v.toFixed(v >= 100 || i === 0 ? 0 : v >= 10 ? 1 : 2) + ' ' + u[i];
+      };
+
+      async function api(path, options = {}) {
+        const res = await fetch(path, {
+          ...options,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + token,
+            ...(options.headers || {}),
+          },
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(body.message || body.error || 'HTTP ' + res.status);
+        return body;
+      }
+
+      async function connect() {
+        token = $('token').value.trim();
+        if (!token) return say('authOut', 'Enter the access token.', 'err');
+        try {
+          const status = await api('/api/status');
+          say('authOut', 'Connected.', 'ok');
+          location.hash = token;
+          ['statusSection', 'addSection', 'torrentsSection', 'cacheSection']
+            .forEach((id) => ($(id).hidden = false));
+          render(status);
+          if (poll) clearInterval(poll);
+          poll = setInterval(refresh, 3000);
+          refreshCache();
+        } catch (err) {
+          say('authOut', err.message, 'err');
+        }
+      }
+
+      function say(id, msg, cls) {
+        const el = $(id);
+        el.textContent = msg;
+        el.className = 'out' + (cls ? ' ' + cls : '');
+      }
+
+      function render(s) {
+        $('version').textContent = s.addon.name + ' v' + s.addon.version;
+        $('providers').textContent = s.providers.length
+          ? 'sources: ' + s.providers.join(', ')
+          : 'no source providers configured';
+        $('manifestUrl').textContent = s.manifestUrl;
+        $('installLink').href = 'stremio://' + s.manifestUrl.replace(/^https?:\/\//, '');
+        $('sDown').textContent = fmtBytes(s.global.downloadSpeed) + '/s';
+        $('sUp').textContent = fmtBytes(s.global.uploadSpeed) + '/s';
+        $('sTorrents').textContent = s.global.torrents;
+        $('sCache').textContent = s.cache.human + ' / ' + s.cache.maxHuman;
+        renderTorrents(s.torrents);
+      }
+
+      function renderTorrents(list) {
+        const host = $('torrents');
+        if (!list.length) { host.innerHTML = '<p class="muted">Nothing loaded.</p>'; return; }
+        const rows = list.map((t) => `
+          <tr>
+            <td class="name" title="${esc(t.name)}">${esc(t.name)}</td>
+            <td><div class="bar"><i style="width:${(t.progress * 100).toFixed(1)}%"></i></div>
+                <span class="muted">${(t.progress * 100).toFixed(1)}%</span></td>
+            <td>${fmtBytes(t.downloadSpeed)}/s</td>
+            <td>${t.numPeers}</td>
+            <td>${t.readers}</td>
+            <td>${fmtBytes(t.totalLength)}</td>
+            <td><button class="ghost" data-drop="${t.infoHash}">Drop</button></td>
+          </tr>`).join('');
+        host.innerHTML = `<table><thead><tr>
+            <th>Name</th><th>Progress</th><th>Speed</th><th>Peers</th>
+            <th>Readers</th><th>Size</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+        host.querySelectorAll('[data-drop]').forEach((btn) => {
+          btn.onclick = async () => {
+            btn.disabled = true;
+            try { await api('/api/torrents/' + btn.dataset.drop + '?deleteFiles=true', { method: 'DELETE' }); }
+            catch (e) { alert(e.message); }
+            refresh(); refreshCache();
+          };
+        });
+      }
+
+      function esc(s) {
+        return String(s).replace(/[&<>"']/g, (c) =>
+          ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+      }
+
+      async function refresh() {
+        try { render(await api('/api/status')); } catch { /* transient */ }
+      }
+
+      async function refreshCache() {
+        try {
+          const c = await api('/api/cache');
+          const host = $('cache');
+          if (!c.entries.length) { host.innerHTML = '<p class="muted">Cache is empty.</p>'; return; }
+          host.innerHTML = '<table><thead><tr><th>Infohash</th><th>Size</th><th>Live</th>' +
+            '<th>Last used</th></tr></thead><tbody>' +
+            c.entries.map((e) => `<tr>
+              <td><code>${e.infoHash.slice(0, 16)}…</code></td>
+              <td>${e.human}</td>
+              <td>${e.live ? 'yes' : 'no'}</td>
+              <td class="muted">${new Date(e.lastAccessAt).toLocaleString()}</td>
+            </tr>`).join('') + '</tbody></table>';
+        } catch { /* transient */ }
+      }
+
+      $('connect').onclick = connect;
+      $('token').onkeydown = (e) => { if (e.key === 'Enter') connect(); };
+
+      $('add').onclick = async () => {
+        const magnet = $('magnet').value.trim();
+        if (!magnet) return say('addOut', 'Paste a magnet first.', 'err');
+        $('add').disabled = true;
+        say('addOut', 'Fetching metadata from the swarm…');
+        try {
+          const body = { magnet };
+          if ($('season').value) body.season = Number($('season').value);
+          if ($('episode').value) body.episode = Number($('episode').value);
+          const r = await api('/api/torrents', { method: 'POST', body: JSON.stringify(body) });
+          if (r.playUrl) {
+            $('addOut').className = 'out ok';
+            $('addOut').innerHTML =
+              'Ready: <b>' + esc(r.picked.name) + '</b><br><code>' + esc(r.playUrl) + '</code>';
+          } else {
+            say('addOut', 'Added "' + r.name + '" but found no video file in it.', 'err');
+          }
+          refresh();
+        } catch (err) {
+          say('addOut', err.message, 'err');
+        } finally {
+          $('add').disabled = false;
+        }
+      };
+
+      $('copyManifest').onclick = () => {
+        navigator.clipboard.writeText($('manifestUrl').textContent);
+        $('copyManifest').textContent = 'Copied';
+        setTimeout(() => ($('copyManifest').textContent = 'Copy'), 1500);
+      };
+
+      $('sweep').onclick = async () => {
+        $('sweep').disabled = true;
+        try { const r = await api('/api/cache/sweep', { method: 'POST' });
+              alert('Freed ' + r.freedHuman + ' across ' + r.evicted.length + ' torrent(s).'); }
+        catch (e) { alert(e.message); }
+        $('sweep').disabled = false;
+        refreshCache(); refresh();
+      };
+
+      if (token) { $('token').value = token; connect(); }
+    </script>
+  </body>
+</html>

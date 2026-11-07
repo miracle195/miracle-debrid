@@ -1,0 +1,48 @@
+[Unit]
+Description=Miracle Debrid — torrent to HTTP streaming for Stremio
+Documentation=file:/opt/miracle-debrid/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=miracle
+Group=miracle
+WorkingDirectory=/opt/miracle-debrid
+
+# Put your settings in /etc/miracle-debrid.env (same keys as .env.example).
+EnvironmentFile=-/etc/miracle-debrid.env
+Environment=NODE_ENV=production
+
+ExecStart=/usr/bin/node /opt/miracle-debrid/dist/index.js
+
+Restart=on-failure
+RestartSec=5s
+
+# Give in-flight streams a chance to close cleanly.
+KillSignal=SIGTERM
+TimeoutStopSec=20s
+
+# --- hardening ---------------------------------------------------------
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+# The only paths the service may write to.
+ReadWritePaths=/var/lib/miracle-debrid
+
+# Torrenting opens a lot of sockets at once.
+LimitNOFILE=65535
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=miracle-debrid
+
+[Install]
+WantedBy=multi-user.target
